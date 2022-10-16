@@ -1,7 +1,5 @@
 # Documentation (Portfolio)
 
-## Table of Contents
-
 # Intro
 
 This portfolio will guide you through several snippets of my work during the third software semester of FHICT (2022-2023). This repository will act as a summary of my work in this semester, along with explanations of how I proved a certain set of learning outcomes.
