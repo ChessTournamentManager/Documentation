@@ -1,19 +1,5 @@
 # Learning Outcomes
 
-## Table of Contents
-- [Learning Outcomes](#learning-outcomes)
-  - [Table of Contents](#table-of-contents)
-  - [Web Application](#web-application)
-  - [Software Quality](#software-quality)
-  - [Agile Methodology](#agile-methodology)
-  - [CI/CD](#cicd)
-  - [Cultural Differences and Ethics](#cultural-differences-and-ethics)
-  - [Requirements and Design](#requirements-and-design)
-  - [Business Processes](#business-processes)
-  - [Professionalism](#professionalism)
-
-<br />
-
 ## Web Application
 "You design and build **user-friendly**, **full-stack** web applications."
 
