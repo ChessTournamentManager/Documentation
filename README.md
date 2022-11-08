@@ -26,3 +26,5 @@ Below is a table containing all of my proof, with links which will take you to d
 | [Web Application](/Resources/Learning%20Outcomes.md#Web%20Application) | Service API's | Proof of Concept | x | [🔗](/Proof/Web%20Application/Service%20API's.md) |
 | [Business Processes](/Resources/Learning%20Outcomes.md#Business%20Processes) | Business Process Scenario | Design | x | [🔗](/Proof/Business%20Processes/Business%20Process%20Scenario.md) |
 | [Cultural Differences and Ethics](/Resources/Learning%20Outcomes.md#Cultural%20Differences%20and%20Ethics) | User Data Protection | Design | x | [🔗](/Proof/Cultural%20Differences%20and%20Ethics/User%20Data%20Protection.md) |
+| Web Application | Database Research | Research | x | [🔗]() |
+| Software Quality | Security Research | Research | x | [🔗]() |
