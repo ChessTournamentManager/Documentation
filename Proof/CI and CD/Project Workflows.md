@@ -3,11 +3,12 @@
 <h2> Table of Contents </h2>
 
 - [Introduction](#introduction)
-	- [What is CI/CD?](#what-is-cicd)
-	- [Why do I use it?](#why-do-i-use-it)
-	- [Where do I use it?](#where-do-i-use-it)
+  - [What is CI/CD?](#what-is-cicd)
+  - [Why do I use it?](#why-do-i-use-it)
+  - [Where do I use it?](#where-do-i-use-it)
 - [Vue.js Frontend CI](#vuejs-frontend-ci)
 - [Java Backend CI](#java-backend-ci)
+- [Next Steps](#next-steps)
 
 ## Introduction
 
@@ -26,6 +27,8 @@ I implemented CI/CD into my project repositories, because this automated process
 GitHub Actions is used to implement CI/CD into all the repositories of this project. A CI/CD pipeline with GitHub Actions is a workflow that can be present in every repository. Workflows are located in the directory '/.github/workflows'.
 
 ## Vue.js Frontend CI
+
+This is the complete workflow that I use for the frontend:
 
 ```yml
 name: Node.js CI
@@ -96,7 +99,112 @@ jobs:
         tags: judahlit/chess_tournament_manager:frontend
 ```
 
+In this part of the workflow, I tell GitHub to only run it when I have made a push or when I have requested a pull request to the develop or master branch:
+
+```yml
+on:
+  push:
+  pull_request:
+    branches: [ "main", "develop" ]
+```
+
+Then I make some preparations before I actually build and test my application. I first tell GitHub to run my application on ubuntu and to go into the 'vueApp' directory:
+
+```yml
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./vueApp
+```
+
+After that, I tell GitHub to install node.js. This will make it possible to run the commands I will use later. I could also install multiple versions of node here and make the workflow run multiple times. I choose not to do that, because that is inconvenient when I want to run checks with SonarCLoud (this will be seen later).
+
+```yml
+    strategy:
+      matrix:
+        node-version: [16.x]
+```
+
+I then use a GitHub action which checks-out my repository under the $GITHUB_WORKSPACE, so the workflow can access it. I also get the whole branch with its entire history, which is something SonarCloud wants to have.
+
+```yml
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+```
+
+After that, a GitHub action is used to setup Node.js for the workflow. When that is completed, the node dependencies that the application needs are installed. The application is now ready to be built and tested.
+
+```yml
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './vueApp/package-lock.json'
+        
+    - name: Set up application
+      run: npm ci
+```
+
+Then the workflow tells GitHub to build the application and run all the tests:
+
+```yml      
+    - name: Build application
+      run: npm run build --if-present
+
+    - name: Test application
+      run: npm test
+```
+
+After that, SonarCloud will analyze the application to see whether there are bugs, vulnerabilities, etc. The tokens that I use are stored as secrets in Github. I refer to those secrets in the workflow:
+
+```yml
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
+
+In the next Job, I will push the application to Dockerhub. In this first part, I only let this job be executed if the workflow has run successfully so far and if the branch which the workflow is running on is the master branch:
+
+```yml
+  push_to_DockerHub:
+    needs: build_and_test
+    if: success() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+```
+
+In here, I log into Dockerhub with a GitHub action by using my credentials which I saved as GitHub secrets:
+
+```yml
+    steps:
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2.0.0
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+```
+
+And lastly, I push my application to DockerHub in the chess_tournament_manager repository as a docker image tagged as 'frontend'.
+
+```yml
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v3.1.1
+      with:
+        push: true
+        tags: judahlit/chess_tournament_manager:frontend
+```
+
+
 ## Java Backend CI
+
+This is the workflow that I use for the backend services. This workflow is very similar to the frontend workflow, so I won't explain it step by step. The only differences here, is that the workflow doesn't trigger on every push and that Maven is used instead of Node.js.
 
 ```yml
 name: Java CI with Maven
@@ -149,24 +257,6 @@ jobs:
         tags: judahlit/chess_tournament_manager:tournament-svc
 ```
 
-<h1>Notes:</h1>
+## Next Steps
 
-For each CI explanation, first post the entire code, then guide the reader through the code using code snippets
-
-- Frontend CI
-	- Code
-	- Explanation
-		- git checkout node blabla
-		- build
-		- test
-		- sonarcloud
-		- dockerpush if on main
-- Backend CI explanation
-	- Code
-	- Explanation
-		- git checkout node blabla
-		- build
-		- test
-		- sonarcloud
-		- dockerpush if on main
-- Next Steps
+Now that I have working workflows, I can now monitor more easily whether my application works as intended or not. The next steps are to add good tests and to keep an eye on the SonarCloud analyses of each of my components.
