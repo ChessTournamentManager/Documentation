@@ -82,9 +82,6 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 
 
-**(What is the website of Redis?)**
-
-
 
 ## MongoDB
 *Website: https://www.mongodb.com/*
@@ -179,7 +176,7 @@ For Redis, first install these dependencies by putting them in the pom.xml file 
 </dependency>
 ```
 
-Then add the `@RedisHash` bean to your model, and give the hash a name that fits your model. Then, implement the Serializable class, so that objects of the model class can be serialized and deserialized by Redis.
+Then add the `@RedisHash` bean to your domain class, and give the hash a name that fits. Then, implement the Serializable class, so that objects of the domain class can be serialized and deserialized by Redis.
 ```java
 // More imports
 import org.springframework.data.redis.core.RedisHash;
@@ -209,7 +206,7 @@ public interface TournamentRepository extends CrudRepository<Tournament, UUID> {
 }
 ```
 
-Then add this configuration class to your project. This configuration class is responsible for connecting with the installed Redis database and serializing models. In this configuration, transactions are enabled.
+Then add this configuration class to your project. This configuration class is responsible for connecting with the installed Redis database and serializing domain classes. In this configuration, transactions are enabled.
 ```java
 // Imports
 
@@ -245,15 +242,15 @@ public class MainConfiguration {
 }
 ```
 
-Lastly, put these environment variables in your application.properties file.
+Lastly, put these environment variables in your application.properties file. It is important to note that the value of `redis.host`, which is `tournament-db-redis`, aligns with the name of the docker container that I will be using that contains a redis instance.
 ```
 redis.host=tournament-db-redis
 redis.port=6379
 ```
 
-
 ## MongoDB Implementation
 
+For MongoDB, install this dependency for your project.
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
@@ -261,6 +258,7 @@ redis.port=6379
 </dependency>
 ```
 
+Then go to your model and put the `@Document` annotation above your domain class. This way, the application knows you are trying to use MongoDB's repository, instead of the JPARepository. You can also include the `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation to tell the application to remove `null` fields when serializing the class.
 ```java
 // Imports
 
@@ -277,6 +275,7 @@ public class Player {
 }
 ```
 
+In your repository, extend the MongoRepository and insert the domain model class and the type of ID that it has.
 ```java
 // More imports
 
@@ -287,6 +286,7 @@ public interface PlayerRepository extends MongoRepository<Player, UUID> {
 }
 ```
 
+In your application.properties, add these properties and rename some values to something more secure. Again, `player-db-mongo` is referring to a docker container name.
 ```
 spring.data.mongodb.host=player-db-mongo
 spring.data.mongodb.authentication-database=admin
@@ -298,6 +298,7 @@ spring.data.mongodb.port=27017
 
 ## Scylla Implementation
 
+For Scylla, install these dependencies in your project. With the spring-data-cossandra dependency, you can use the cassandra repositories and connect with a cassandra database. These things will also be useful with the Scylla database. The java-driver-core dependency will allow Java data to be inserted in a Scylla database.
 ```xml
 <dependency>
   <groupId>org.springframework.data</groupId>
@@ -310,6 +311,7 @@ spring.data.mongodb.port=27017
 </dependency>
 ```
 
+Add the `@Table` and `@PrimaryKey` annotations in your domain class. You can also add the `@Column` annotation to give properties a different name in the database table. In this case, I renamed them because capital letters are automatically lowercasedin the database. I like using `snake_case`.
 ```java
 // Imports
 
@@ -333,7 +335,7 @@ public class Rank {
     // Constructors, getters and setters
 }
 ```
-
+In your repository, extend the CassandraRepository and insert the domain model class and the type of ID that it has.
 ```java
 // More imports
 
@@ -343,6 +345,7 @@ public interface RankRepository extends CassandraRepository<Rank, UUID> {
 }
 ```
 
+Then add this configuration class to your project. This configuration class is responsible for connecting with Scylla. In this class, it is mentioned that a keyspace in Scylla will be created, if it doesn't already exist. This is very useful, because this will eliminate the need to enter the database and manually create a keyspace.
 ```java
 // Imports
 
@@ -370,6 +373,7 @@ public class ScyllaConfiguration extends AbstractCassandraConfiguration {
 }
 ```
 
+These are the properties and values used for this implementation. As you can see, a schema will also be created if it doesn't already exist.
 ```
 spring.data.cassandra.contact-points=localhost
 spring.data.cassandra.port=9042
