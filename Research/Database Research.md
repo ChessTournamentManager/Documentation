@@ -20,7 +20,8 @@
   - [Redis Benchmark](#redis-benchmark)
   - [MongoDB Benchmark](#mongodb-benchmark)
 - [Conclusion](#conclusion)
-- [Next Steps](#next-steps)
+- [Sources](#sources)
+- [DOT Framework Matrix](#dot-framework-matrix)
 
 # Introduction
 
@@ -248,6 +249,20 @@ redis.host=tournament-db-redis
 redis.port=6379
 ```
 
+Now, the application should be able to write data onto a Redis instance. To test this, you can make a post request to your API.
+
+[![Tournament post request](../Images/postman_post_tournament.png)](../Images/postman_post_tournament.png)
+
+*When making a post request, there is a response from the API.*
+
+Then, we can go into Redis and check if the posted object is saved as intended. You could check this by using the redis-cli, but I prefer using the RedisInsight GUI.
+
+[![Tournament post request](../Images/redisinsight.png)](../Images/redisinsight.png)
+
+*The posted tournament within Redis.*
+
+As you can see, the posted tournament has succesfully been saved in the database.
+
 ## MongoDB Implementation
 
 For MongoDB, install this dependency for your project.
@@ -311,7 +326,7 @@ For Scylla, install these dependencies in your project. With the spring-data-cos
 </dependency>
 ```
 
-Add the `@Table` and `@PrimaryKey` annotations in your domain class. You can also add the `@Column` annotation to give properties a different name in the database table. In this case, I renamed them because capital letters are automatically lowercasedin the database. I like using `snake_case`.
+Add the `@Table` and `@PrimaryKey` annotations in your domain class. You can also add the `@Column` annotation to give properties a different name in the database table. In this case, I renamed them because capital letters are automatically lowercased in the database. I like using `snake_case`.
 ```java
 // Imports
 
@@ -400,5 +415,8 @@ scylla.keyspace=rankKeyspace
 
 
 
-# Next Steps
+# Sources
+
+
+# DOT Framework Matrix
 
