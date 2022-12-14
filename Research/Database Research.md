@@ -251,9 +251,7 @@ redis.port=6379
 
 Now, the application should be able to write data onto a Redis instance. To test this, you can make a post request to your API.
 
-<p align="center">
-  <img src="../Images/postman_post_tournament.png">
-</p>
+[![Tournament post request](../Images/postman_post_tournament.png)](../Images/postman_post_tournament.png)
 
 *When making a post request, there is a response from the API.*
 
