@@ -12,10 +12,10 @@
   - [Cassandra](#cassandra)
   - [Scylla](#scylla)
 - [Implementation](#implementation)
+  - [Docker Compose File](#docker-compose-file)
   - [Redis Implementation](#redis-implementation)
   - [MongoDB Implementation](#mongodb-implementation)
   - [Scylla Implementation](#scylla-implementation)
-  - [Docker Compose File](#docker-compose-file)
 - [Benchmarking](#benchmarking)
   - [Redis Benchmark](#redis-benchmark)
   - [MongoDB Benchmark](#mongodb-benchmark)
@@ -162,6 +162,9 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 In this section I will show how to implement these databases to a Spring Boot project. The explanations will assume that there is already a basic API which can handle basic CRUD operations. The instructions on how to install all of the databases are at the end, in the 'Docker Compose File' part of this section.
 
+## Docker Compose File
+
+
 ## Redis Implementation
 
 For Redis, first install these dependencies by putting them in the pom.xml file and then reload the project.
@@ -249,7 +252,7 @@ redis.host=tournament-db-redis
 redis.port=6379
 ```
 
-Now, the application should be able to write data onto a Redis instance. To test this, you can make a post request to your API.
+Now, the application should be able to write data into the Redis instance. To test this, you can make a POST request to your API.
 
 [![Tournament post request](../Images/postman_post_tournament.png)](../Images/postman_post_tournament.png)
 
@@ -257,11 +260,15 @@ Now, the application should be able to write data onto a Redis instance. To test
 
 Then, we can go into Redis and check if the posted object is saved as intended. You could check this by using the redis-cli, but I prefer using the RedisInsight GUI.
 
-[![Tournament post request](../Images/redisinsight.png)](../Images/redisinsight.png)
+[![Tournament saved in Redis](../Images/redisinsight.png)](../Images/redisinsight.png)
 
 *The posted tournament within Redis.*
 
-As you can see, the posted tournament has succesfully been saved in the database.
+As you can see, the posted tournament has succesfully been saved in the database. We can also make a GET request to confirm this.
+
+[![Tournament get request](../Images/postman_get_tournament.png)](..Images/postman_get_tournament.png)
+
+*Response contains the new tournament*
 
 ## MongoDB Implementation
 
@@ -310,6 +317,24 @@ spring.data.mongodb.password=password
 spring.data.mongodb.database=Player
 spring.data.mongodb.port=27017
 ```
+
+The application should be able to write data into the MongoDB database.
+
+[![Player post request](../Images/postman_post_player.png)](../Images/postman_post_player.png)
+
+*The response from the API.*
+
+Then, we can go into MongoDB and check if the posted object is saved as intended. I'm using the GUI application called MongoDB Compass to do this.
+
+[![Player saved in MongoDB](../Images/mongodbcompass.png)](../Images/mongodbcompass.png)
+
+*The posted player within MongoDB.*
+
+The player has been saved succesfully. Let's make a GET request.
+
+[![Player get request](../Images/postman_get_player.png)](..Images/postman_get_player.png)
+
+*Response contains the new player*
 
 ## Scylla Implementation
 
@@ -397,8 +422,6 @@ spring.data.cassandra.schema-action=create_if_not_exists
 spring.data.cassandra.keyspace-name=rankKeyspace
 scylla.keyspace=rankKeyspace
 ```
-
-## Docker Compose File
 
 
 # Benchmarking
