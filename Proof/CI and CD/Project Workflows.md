@@ -20,7 +20,23 @@ For more information about CI/CD, go to [this page](https://www.atlassian.com/co
 
 ### Why do I use it?
 
-I implemented CI/CD into my project repositories, because this automated process saves me a considerable amount of time. I can easily add commands using third party software, which prevents me having to install the software and manually use it (software such as SonarQube/SonarCloud). I also wanted to learn more about how to create a good CI/CD pipeline and be able to explain to others how it works, so that they can also save time. Of course I also wanted to use it, because it's required by my school.
+I implemented CI/CD into my project repositories, because this automated process saves me a considerable amount of time. Without a CI/CD pipeline, this is what the developer process would look like every time some code should be merged with the main or develop branch:
+
+1. The developer would have to run a command which would build the application, to make sure there are no errors.
+2. The developer would have to run a command which would run the tests and make sure they pass.
+
+This would be very annoying to do every single time. You could also forget to do it, which could result in faulty code being merged to important branches, which would be time-consuming to fix. However, this process would be even more time-consuming and fault-prone if you want to use third party software to look at your code, or if you want to deploy your application, or if you want to run different types of tests with different commands:
+
+1. The developer would have to run a command which would build the application, to make sure there are no errors.
+2. The developer would have to run a command which would run the unit tests and make sure they pass.
+3. The developer would have to run a command which would run the integration tests and make sure they pass.
+4. The developer would have to run a command which would run the performance tests and make sure they pass.
+5. The developer would have to run a command (or multiple commands) which would make third party software scan the code in the project for vulnerabilities, bugs, etc. If these results should be available online, the developer must pass in a token every single time.
+6. The developer would have to run commands which would deploy this application to a cloud service. For this step, the developer needs to be certain that all the other steps have already been done, otherwise faulty code would be present in the production environment!
+
+As you can see, this process would be much more time-consuming if it wasn't automated with a pipeline. It is also much more likely for something to go wrong, because the developer could easily forget to do something when merging code to an important branch. This is why it is objectivly better to use CI/CD. It is important for me, as a professional software developer, to choose the best methods and tools available, so I can continually improve my skills.
+
+It is also very easy to add third party software into a CI/CD pipeline (software such as SonarQube/SonarCloud). This kind of software increases the quality assurance of my code, by scanning it for vulnerabilities, bugs, code smells and more. I also wanted to learn more about how to create a good CI/CD pipeline and be able to explain to others how it works, so that they can also save time. Of course I also wanted to use it, because it's required by my school.
 
 ### Where do I use it?
 
