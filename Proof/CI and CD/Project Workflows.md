@@ -36,7 +36,7 @@ This would be very annoying to do every single time. You could also forget to do
 
 As you can see, this process would be much more time-consuming if it wasn't automated with a pipeline. It is also much more likely for something to go wrong, because the developer could easily forget to do something when merging code to an important branch. This is why it is objectivly better to use CI/CD. It is important for me, as a professional software developer, to choose the best methods and tools available, so I can continually improve my skills.
 
-It is also very easy to add third party software into a CI/CD pipeline (software such as SonarQube/SonarCloud). This kind of software increases the quality assurance of my code, by scanning it for vulnerabilities, bugs, code smells and more. I also wanted to learn more about how to create a good CI/CD pipeline and be able to explain to others how it works, so that they can also save time. Of course I also wanted to use it, because it's required by my school.
+It is also very easy to add third party software into a CI/CD pipeline (software such as SonarQube/SonarCloud). This kind of software increases the quality assurance of my code, by scanning it for vulnerabilities, bugs, code smells and more. I also wanted to learn more about how to create a good CI/CD pipeline and be able to explain to others how it works, so that they can also save time.
 
 ### Where do I use it?
 
