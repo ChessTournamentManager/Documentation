@@ -12,7 +12,7 @@
   - [Cassandra](#cassandra)
   - [Scylla](#scylla)
 - [Implementation](#implementation)
-  - [Docker Compose File](#docker-compose-file)
+  - [Dockerizing the Application](#dockerizing-the-application)
   - [Redis Implementation](#redis-implementation)
   - [MongoDB Implementation](#mongodb-implementation)
   - [Scylla Implementation](#scylla-implementation)
@@ -160,14 +160,62 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 # Implementation
 
-In this section I will show how to implement these databases to a Spring Boot project. The explanations will assume that there is already a basic API which can handle basic CRUD operations. The instructions on how to install all of the databases are at the end, in the 'Docker Compose File' part of this section.
+In this section I will show how to implement these databases to a Spring Boot project. The explanations will assume that there is already a basic API which can handle basic CRUD operations. 
 
-## Docker Compose File
+## Dockerizing the Application
 
+You can use docker to easily connect your application to a database. Docker is an open source software platform used for containerizing applicataions. Containers are basically very small virtual machines, which only contain an application and its dependencies. With docker, it's easy to run applications, because it is not necessary install all needed technologies and dependencies on your local machine. It is also very easy to use databases with docker. Usually, all you need to do is specify which database you want to use by mentioning an existing docker image. A docker image is a read-only template with instructions for creating a docker container. After you have installed docker on your machine by following [this guide](https://docs.docker.com/get-docker/), you can specify a docker image to pull in a command, or through a docker compose file. We will be using a docker compose file in this guide.
+
+Because we will be using docker, we will also be containerizing our backend service. We will use a docker compose file for telling docker which containers to create. The compose file will point towards a docker file, which contains the specific instructions for containerizing an application. This is a simple docker file I use for each of my services:
+
+```docker
+FROM maven:3.8.6-openjdk-18-slim
+
+ADD target/myApp.jar myApp.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/myApp.jar"]
+```
+
+When the instructions in this file are followed when building a container, the maven docker image of the specified version will be pulled and the build from myApp will be added to that image. Then, port 8080 will be configured to be accesible from outside the container and myApp will be run as an executable.
+
+I will show a possible docker compose file at the start of each database implementation explanation, because I am assuming you only want to implement a single database for your application. If you want to see my full docker compose file for my project, go [here](https://github.com/ChessTournamentManager/.github/blob/main/docker-compose.yml).
 
 ## Redis Implementation
 
-For Redis, first install these dependencies by putting them in the pom.xml file and then reload the project.
+Add this docker compose file to root directory of your application, where your dockerfile is also located. Give your services and volume a fitting name.
+```yml
+version: "3.9"
+
+services:
+  tournament-svc:
+    container_name: tournament-svc
+    depends_on:
+      - tournament-db-redis
+    image: tournament-svc
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:8080"
+  tournament-db-redis:
+    container_name: tournament-db-redis
+    restart: always
+    image: redis:7.0.5-alpine
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+    volumes:
+      - tournament-db-volume:/var/lib/tournament-db-redis
+
+volumes:
+  tournament-db-volume:
+```
+
+When this file is run, containers will be made of your application and a Redis instance. At the end of this implementation guide, they should be able to communicate with each other.
+
+Then add these dependencies by putting them in the pom.xml file and then reload the project.
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
@@ -252,6 +300,11 @@ redis.host=tournament-db-redis
 redis.port=6379
 ```
 
+Run this command to spin up your containers:
+```shell
+docker compose up -d --build
+```
+
 Now, the application should be able to write data into the Redis instance. To test this, you can make a POST request to your API.
 
 [![Tournament post request](../Images/postman_post_tournament.png)](../Images/postman_post_tournament.png)
@@ -272,7 +325,43 @@ As you can see, the posted tournament has succesfully been saved in the database
 
 ## MongoDB Implementation
 
-For MongoDB, install this dependency for your project.
+Add this docker compose file to root directory of your application, where your dockerfile is also located. Give your services and volume a fitting name, configure the correct application port and add your chosen username and password. You could also point to an env file instead of storing them directly in your docker compose file.
+```yml
+version: "3.9"
+
+services:
+  player-svc:
+    container_name: player-svc
+    depends_on:
+      - player-db-mongo
+    image: player-svc
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8081:8081"
+  player-db-mongo:
+    container_name: player-db-mongo
+    restart: always
+    image: mongo:5.0.14
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    ports:
+      - 27017:27017
+    expose:
+      - 27017
+    volumes:
+      - player-db-volume:/var/lib/player-db-mongo
+
+volumes:
+  player-db-mongo:
+```
+
+When this file is run, containers will be made of your application and a Mongo instance. At the end of this implementation guide, they should be able to communicate with each other.
+
+Then install this dependency for your project.
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
@@ -318,6 +407,11 @@ spring.data.mongodb.database=Player
 spring.data.mongodb.port=27017
 ```
 
+Run this command to spin up your containers:
+```shell
+docker compose up -d --build
+```
+
 The application should be able to write data into the MongoDB database.
 
 [![Player post request](../Images/postman_post_player.png)](../Images/postman_post_player.png)
@@ -338,7 +432,40 @@ The player has been saved succesfully. Let's make a GET request.
 
 ## Scylla Implementation
 
-For Scylla, install these dependencies in your project. With the spring-data-cossandra dependency, you can use the cassandra repositories and connect with a cassandra database. These things will also be useful with the Scylla database. The java-driver-core dependency will allow Java data to be inserted in a Scylla database.
+Add this docker compose file to root directory of your application, where your dockerfile is also located. Give your services and volume a fitting name and configure the correct application port.
+```yml
+version: "3.9"
+
+services:
+  rank-svc:
+    container_name: rank-svc
+    depends_on: 
+      - rank-db-scylla
+    image: rank-svc
+    build:
+      context: ./rank-svc
+      dockerfile: /Dockerfile
+    restart: on-failure
+    ports:
+      - 8082:8082
+  rank-db-scylla:
+    container_name: rank-db-scylla
+    restart: always
+    image: scylladb/scylla:latest
+    ports:
+      - 9042:9042
+    expose:
+      - 9042
+    volumes:
+      - rank-db-volume:/var/lib/rank-db-scylla
+
+volumes:
+  rank-db-scylla:
+```
+
+When this file is run, containers will be made of your application and a Scylla instance.
+
+Then install these dependencies in your project. With the spring-data-cossandra dependency, you can use the cassandra repositories and connect with a cassandra database. These things will also be useful with the Scylla database. The java-driver-core dependency will allow Java data to be inserted in a Scylla database.
 ```xml
 <dependency>
   <groupId>org.springframework.data</groupId>
@@ -423,6 +550,16 @@ spring.data.cassandra.keyspace-name=rankKeyspace
 scylla.keyspace=rankKeyspace
 ```
 
+Run this command to spin up your containers:
+```shell
+docker compose up -d --build
+```
+
+At this point, I expected the the service to work and connect with the database. Unfortunately, this wasn't the case:
+
+[![Rank error logs](../Images/rank_error_logs.png)](../Images/rank_error_logs.png)
+
+In these error logs, the rank service that uses Scylla says that it cannot reach any valid contact point and tells me to make sure I have provided valid addresses. You can see that it thinks the address I have provided was `localhost/<unresolved>:9042`. The `unresolved` part is strange. There is also another large problem. When you are building an application, it should not depend on a database to start running. It should have a mocked database and should run tests without depending on a real database. I have decided not to fix this issue, because it will take too much time to do so. Instead, I will be using a mongo or redis instance for my rank service. This also means that for the upcoming benchmark tests, I will only be testing the Redis and MongoDB instances.
 
 # Benchmarking
 
