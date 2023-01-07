@@ -566,129 +566,182 @@ In these error logs, the rank service that uses Scylla says that it cannot reach
 
 # Benchmarking
 
-(Explain what kind of tests we want and what we need to do for it. Explain that it is done in a seperate repository. Link the repository. Also say that there is a docker compose, which has a redis and mongodb instance.)
+For benchmarking Redis and MongoDB, I have created two more Spring Boot projects, which are located in [this](https://github.com/ChessTournamentManager/Research-Benchmarks) repository. The repository also contains a docker compose file, which is used to get instances of Redis and MongoDB to run.
+
+In the Spring Boot projects, there will be benchmark tests with Java Microbenchmark Harness (JMH) and JUnit5. Each of the projects has a Research domain class and a ResearchRepository. Since we are testing the databases, we need to use the ResearchRepository in our tests. By using JMH within the testing framework of Spring Boot, it is possible to start the application context, which means the ResearchRepository can be autowired. This is extremely important.
+
+In the tests, we will attempt to find out what the read and write speeds of the two databases are. To find this out, we will write tests where the application will only access a mocked repository and a test where the application accesses the real repository and uses a database. We can then calucate the read and write speeds of the database. I will also write tests where only an object is created and where a variable is accessed, just to see how the time it takes to do that compares with the other tests.
+
+The reason why I made seperate projects instead of including the benchmark tests in my existing services, is because those tests are not related to main functionality of my application. If I had included them, they would run whenever a new build of the service is made, which would be a waste of time and resources. I would have needed to find a way to exclude those specific tests when I run a build, which would cost more time to figure out than if I had just created new projects.
+
+With that said, let's see how to write benchmark tests in Spring Boot.
 
 ## Benchmark Testing With JMH in Spring Boot
 
+To use JMH in Spring Boot, add these dependencies in your pom.xml.
 ```xml
-		<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core -->
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-core</artifactId>
-			<version>${jmh.version}</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-generator-annprocess -->
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>${jmh.version}</version>
-			<scope>test</scope>
-		</dependency>
+<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core -->
+<dependency>
+  <groupId>org.openjdk.jmh</groupId>
+  <artifactId>jmh-core</artifactId>
+  <version>${jmh.version}</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-generator-annprocess -->
+<dependency>
+  <groupId>org.openjdk.jmh</groupId>
+  <artifactId>jmh-generator-annprocess</artifactId>
+  <version>${jmh.version}</version>
+  <scope>test</scope>
+</dependency>
 ```
 (write comments that explain the code, and also put the comments in the project itself)
 
+Below are the tests that I have written. This code is present in both spring-jmh-redis and spring-jmh-mongo. This makes the benchmarks more accurate. Read the comments to get a clearer understanding of what the code does.
+
 ```java
+// Imports
+
+// The @SpringBootTest annotation allows other classes to be autowired into this class.
+// The @State annotation is required for a class that has fields that are being used for benchmarks.
+// The @BenchmarkMode annotation allows us to customize in which format we want our benchmark results. 
+// In this case, the benchmark results will show the average completion time for a single operation.
+// The @OutputTimeUnit allows us to choose a time unit in which our tests are measured.
+// In this case, the tests are measured in microseconds.
 @SpringBootTest
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ResearchTest {
 
-    public static ResearchRepository researchRepository;
-    @Mock
-    private ResearchRepository mockedResearchRepository;
-    private AutoCloseable autoCloseable;
-    private UUID readResearchId;
+  // The real repository for our tests. This needs to be static, otherwise the autowiring won't work with JMH.
+  public static ResearchRepository researchRepository;
 
-    @Autowired
-    public void setResearchRepository(ResearchRepository researchRepository) {
-        ResearchTest.researchRepository = researchRepository;
-    }
+  // Some fields that are needed for mock tests.
+  @Mock
+  private ResearchRepository mockedResearchRepository;
+  private AutoCloseable autoCloseable;
 
-    @AfterEach
-    void tearDown() throws Exception {
-        researchRepository.deleteAll();
-    }
+  // The ID of the Research object that needs to be read from the database.
+  private UUID readResearchId;
 
+  // Auto-wires the repository from a set method. Normally this would be done in the constructor of this class, but
+  // JMH needs this class to have the default constructor.
+  @Autowired
+  public void setResearchRepository(ResearchRepository researchRepository) {
+      ResearchTest.researchRepository = researchRepository;
+  }
 
-    @Test
-    public void runBenchmarks() throws Exception {
-        Options opts = new OptionsBuilder()
-                // set the class name regex for benchmarks to search for to the current class
-                .include("\\." + this.getClass().getSimpleName() + "\\.")
-                // do not use forking or the benchmark methods will not see references stored within its class
-                .forks(0)
-                // do not use multiple threads
-                .threads(1)
-                .shouldDoGC(true)
-                .shouldFailOnError(true)
-                .jvmArgs("-server")
-                .build();
+  // Deletes all records in the database after each JUnit5 test.
+  @AfterEach
+  void tearDown() throws Exception {
+      researchRepository.deleteAll();
+  }
 
-        new Runner(opts).run();
-    }
+  // In this test, the benchmark options are set.
+  // Even though multiple benchmark tests are being run, this is the only JUnit test in the class.
+  // All benchmarks are run in this test.
+  @Test
+  public void runBenchmarks() throws Exception {
+      Options opts = new OptionsBuilder()
+              // Set the class name regex for benchmarks to search for to the current class.
+              .include("\\." + this.getClass().getSimpleName() + "\\.")
+              // Do not use forking or the benchmark methods will not see references stored within its class.
+              .forks(0)
+              // Do not use multiple threads.
+              .threads(1)
+              .shouldDoGC(true)
+              .shouldFailOnError(true)
+              .jvmArgs("-server")
+              .build();
 
-    @Setup(Level.Trial)
-    public void initBenchmark() {
-        Research research = new Research("Very Cool Research", 20000);
-        readResearchId = research.getId();
-        researchRepository.save(research);
-        autoCloseable = MockitoAnnotations.openMocks(this);
-    }
+      new Runner(opts).run();
+  }
 
-    @TearDown(Level.Trial)
-    public void endBenchmark() throws Exception {
-        autoCloseable.close();
-    }
+  // Saves a research object in the database and stores its ID in the 'readResearchId' field. 
+  // This is useful for the read test. The autocloseable enables mocking within our benchmark tests.
+  @Setup(Level.Trial)
+  public void initBenchmark() {
+      Research research = new Research("Very Cool Research", 20000);
+      readResearchId = research.getId();
+      researchRepository.save(research);
+      autoCloseable = MockitoAnnotations.openMocks(this);
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
-    public void BM1_CreateObject(Blackhole blackhole) {
-        blackhole.consume(new Research("Cool Research", 5000));
-    }
+  // Cleans up resources by closing the autocloseable after the completion of each benchmark.
+  @TearDown(Level.Trial)
+  public void endBenchmark() throws Exception {
+      autoCloseable.close();
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
-    public void BM2_MockWriteObject() {
-        mockedResearchRepository.save(new Research("Cool Research", 5000));
-    }
+  // The first benchmark test. In this benchmark, a Research object is created.
+  // After that, the black hole object will consume the object.
+  // This prevents the compiler from optimizing the object creation code after it has already executed it.
+  // The @Benchmark annotation registers this method as a benchmark test.
+  // The @Warmup annotation allows us to customize how many warmup runs are done before the real benchmarking begins.
+  // In this case, 3 warmup iterations are done. Each iteration takes 10 milliseconds to complete.
+  // The @Measurement annotation allows us to customize how many runs are done during the benchmark.
+  // In this case, 20 iterations are done. Each iteration takes 10 milliseconds to complete.
+  @Benchmark
+  @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+  public void BM1_CreateObject(Blackhole blackhole) {
+      blackhole.consume(new Research("Cool Research", 5000));
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-    public void BM3_WriteObject() {
-        researchRepository.save(new Research("Cool Research", 5000));
-    }
+  // The second benchmark test.
+  // In this benchmark, a Research object is created and the 'save' method of a mocked repository is being called.
+  // Each iteration now takes 200 milliseconds.
+  @Benchmark
+  @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+  public void BM2_MockWriteObject() {
+      mockedResearchRepository.save(new Research("Cool Research", 5000));
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
-    @OutputTimeUnit(TimeUnit.NANOSECONDS)
-    public void BM4_RetrieveKey(Blackhole blackhole) {
-        blackhole.consume(readResearchId);
-    }
+  // The third benchmark test.
+  // In this benchmark, a Research object is created, the 'save' method of the repository is being called.
+  // Then, the database executes a write operation and saves the Research object.
+  // Each iteration now takes a second to complete.
+  @Benchmark
+  @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+  public void BM3_WriteObject() {
+      researchRepository.save(new Research("Cool Research", 5000));
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
-    public void BM5_MockReadObject(Blackhole blackhole) {
-        blackhole.consume(mockedResearchRepository.findById(readResearchId));
-    }
+  // The fourth benchmark test.
+  // In this benchmark, the value of the 'readResearchId' variable is being retrieved.
+  // The results of this benchmark are measured in nanoseconds instead of microseconds.
+  // Nanoseconds are chosen here, because each operation happens very quickly.
+  // Choosing a smaller time unit increases the accuracy of the results.
+  @Benchmark
+  @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  public void BM4_RetrieveKey(Blackhole blackhole) {
+      blackhole.consume(readResearchId);
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-    public void BM6_ReadObject(Blackhole blackhole) {
-        blackhole.consume(researchRepository.findById(readResearchId));
-    }
+  // The fifth benchmark test.
+  // In this benchmark, the value of the 'readResearchId' variable is being retrieved.
+  // Then, the 'findById' method of a mocked repository is being called.
+  @Benchmark
+  @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+  public void BM5_MockReadObject(Blackhole blackhole) {
+      blackhole.consume(mockedResearchRepository.findById(readResearchId));
+  }
+
+  // The sixth benchmark test.
+  // In this benchmark, the value of the 'readResearchId' variable is being retrieved.
+  // Then, the 'findById' method of the repository is being called.
+  // Then, the database executes a read operation with the passed ID and reads the correct Research object.
+  @Benchmark
+  @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+  public void BM6_ReadObject(Blackhole blackhole) {
+      blackhole.consume(researchRepository.findById(readResearchId));
+  }
 }
 ```
 
