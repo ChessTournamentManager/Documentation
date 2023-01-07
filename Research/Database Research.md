@@ -17,9 +17,12 @@
   - [MongoDB Implementation](#mongodb-implementation)
   - [Scylla Implementation](#scylla-implementation)
 - [Benchmarking](#benchmarking)
-  - [Redis Benchmark](#redis-benchmark)
-  - [MongoDB Benchmark](#mongodb-benchmark)
-- [Conclusion](#conclusion)
+  - [Benchmark Testing With JMH in Spring Boot](#benchmark-testing-with-jmh-in-spring-boot)
+  - [Results](#results)
+    - [Redis](#redis-1)
+    - [MongoDB](#mongodb-1)
+  - [Conclusion](#conclusion)
+- [Summary](#summary)
 - [Sources](#sources)
 - [DOT Framework Matrix](#dot-framework-matrix)
 
@@ -563,17 +566,248 @@ In these error logs, the rank service that uses Scylla says that it cannot reach
 
 # Benchmarking
 
+(Explain what kind of tests we want and what we need to do for it. Explain that it is done in a seperate repository. Link the repository. Also say that there is a docker compose, which has a redis and mongodb instance.)
 
-## Redis Benchmark
+## Benchmark Testing With JMH in Spring Boot
+
+```xml
+		<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core -->
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>${jmh.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-generator-annprocess -->
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<version>${jmh.version}</version>
+			<scope>test</scope>
+		</dependency>
+```
+(write comments that explain the code, and also put the comments in the project itself)
+
+```java
+@SpringBootTest
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+public class ResearchTest {
+
+    public static ResearchRepository researchRepository;
+    @Mock
+    private ResearchRepository mockedResearchRepository;
+    private AutoCloseable autoCloseable;
+    private UUID readResearchId;
+
+    @Autowired
+    public void setResearchRepository(ResearchRepository researchRepository) {
+        ResearchTest.researchRepository = researchRepository;
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        researchRepository.deleteAll();
+    }
 
 
-## MongoDB Benchmark
+    @Test
+    public void runBenchmarks() throws Exception {
+        Options opts = new OptionsBuilder()
+                // set the class name regex for benchmarks to search for to the current class
+                .include("\\." + this.getClass().getSimpleName() + "\\.")
+                // do not use forking or the benchmark methods will not see references stored within its class
+                .forks(0)
+                // do not use multiple threads
+                .threads(1)
+                .shouldDoGC(true)
+                .shouldFailOnError(true)
+                .jvmArgs("-server")
+                .build();
+
+        new Runner(opts).run();
+    }
+
+    @Setup(Level.Trial)
+    public void initBenchmark() {
+        Research research = new Research("Very Cool Research", 20000);
+        readResearchId = research.getId();
+        researchRepository.save(research);
+        autoCloseable = MockitoAnnotations.openMocks(this);
+    }
+
+    @TearDown(Level.Trial)
+    public void endBenchmark() throws Exception {
+        autoCloseable.close();
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+    public void BM1_CreateObject(Blackhole blackhole) {
+        blackhole.consume(new Research("Cool Research", 5000));
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+    public void BM2_MockWriteObject() {
+        mockedResearchRepository.save(new Research("Cool Research", 5000));
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+    public void BM3_WriteObject() {
+        researchRepository.save(new Research("Cool Research", 5000));
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+    @OutputTimeUnit(TimeUnit.NANOSECONDS)
+    public void BM4_RetrieveKey(Blackhole blackhole) {
+        blackhole.consume(readResearchId);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
+    public void BM5_MockReadObject(Blackhole blackhole) {
+        blackhole.consume(mockedResearchRepository.findById(readResearchId));
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 3, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+    public void BM6_ReadObject(Blackhole blackhole) {
+        blackhole.consume(researchRepository.findById(readResearchId));
+    }
+}
+```
+
+## Results
+
+### Redis
+
+These are some gained results when running all benchmark tests a couple of times on the project using Redis.
+```shell
+Benchmark                                        Mode  Cnt     Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20     0,453 ±  0,096  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20     7,487 ±  1,144  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  1471,553 ± 86,037  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20     1,932 ±  0,486  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,550 ±  1,220  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   508,009 ± 17,804  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt     Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20     0,512 ±  0,079  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20     7,686 ±  1,285  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  1440,975 ± 56,816  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20     2,246 ±  0,253  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,442 ±  1,096  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   481,405 ± 30,292  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt     Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20     0,371 ±  0,074  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20     7,340 ±  0,981  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  1467,443 ± 63,883  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20     2,363 ±  0,658  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,496 ±  1,547  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   483,402 ± 26,273  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt     Score     Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20     0,515 ±   0,060  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20     7,821 ±   1,327  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  1472,734 ± 110,542  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20     2,338 ±   0,666  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,151 ±   0,598  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   492,332 ±  25,030  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt     Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20     0,532 ±  0,066  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20     7,975 ±  1,253  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  1464,015 ± 57,588  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20     2,363 ±  0,672  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,439 ±  1,115  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   496,809 ± 25,369  μs/op
+```
+
+(Explain that the score displayed is the average of several iterations. Say the time that a single write and read takes on average. Do not forget to subtract the time from the mock tests, and show the calculation. Also say that the retreive key is very fast, and how insignificant the time to access the repository is.)
+
+### MongoDB
+
+These are some gained results when running all benchmark tests a couple of times on the project using MongoDB.
+```shell
+Benchmark                                        Mode  Cnt    Score     Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20    0,361 ±   0,078  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20    3,354 ±   0,816  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  647,216 ± 168,074  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20    2,311 ±   0,654  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    6,526 ±   1,118  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  569,395 ±  20,337  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt    Score     Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20    0,457 ±   0,092  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20    7,310 ±   1,297  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  660,766 ± 116,527  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20    2,333 ±   0,649  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    5,698 ±   0,538  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  613,367 ±  40,552  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt    Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20    0,456 ±  0,079  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20    7,545 ±  1,703  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  618,857 ± 43,952  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20    1,773 ±  0,401  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    5,857 ±  0,453  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  600,871 ± 27,410  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt    Score    Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20    0,484 ±  0,080  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20    7,460 ±  1,318  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  629,476 ± 73,287  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20    1,847 ±  0,438  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    6,063 ±  0,923  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  607,044 ± 52,850  μs/op
+```
+```shell
+Benchmark                                        Mode  Cnt    Score     Error  Units
+BenchmarkTests.ResearchTest.BM1_CreateObject     avgt   20    0,519 ±   0,062  μs/op
+BenchmarkTests.ResearchTest.BM2_MockWriteObject  avgt   20    7,752 ±   1,436  μs/op
+BenchmarkTests.ResearchTest.BM3_WriteObject      avgt   20  664,407 ± 130,880  μs/op
+BenchmarkTests.ResearchTest.BM4_RetrieveKey      avgt   20    1,763 ±   0,365  ns/op
+BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    6,430 ±   1,184  μs/op
+BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  596,001 ±  35,009  μs/op
+```
+
+(Explain that these results are pretty similar, but that the important parts, the read and write time, are not.)
 
 
+## Conclusion
 
-# Conclusion
+(Explain that MongoDB is much faster at writing and a bit slower at reading than Redis in my benchmarks. MongoDB does have a larger margin of error, which means its write times are more inconsistent. Perhaps MongoDB has worse results when under a lot of load and in a multi-threaded environment.)
 
+(Compare your results to other people's results online.)
 
+(List factors which could influence read and write speed in a production environment. For example, if you are using databases on a cloud service, you are dependant on the network speed of the cloud service and the hardware they use. Workload and OS optimization are also important factors. Multithreading capabilities probably also matter.)
+
+# Summary
+
+(Write this when you refactored the document with all the questions. It will then become easier to write a summary.)
 
 # Sources
 
