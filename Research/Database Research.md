@@ -796,8 +796,6 @@ BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,439 ±  1,115  
 BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   496,809 ± 25,369  μs/op
 ```
 
-(Say the time that a single write and read takes on average. Do not forget to subtract the time from the mock tests, and show the calculation. Also say that the retreive key is very fast, and how insignificant the time to access the repository is.)
-
 For each benchmark result, it is displayed what the mode, amount of iterations, score, error margin and time unit is. For each iteration, several operations took place and the average time per operation was calulated. The score you see here, is the average time of all the calculated times of the iterations.
 
 If we look at these results, we can calculate the average read time by taking the average of BM3's results and subtracting the average BM2 result from it:
@@ -861,16 +859,34 @@ BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20    6,430 ±   1,184  
 BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20  596,001 ±  35,009  μs/op
 ```
 
-(Explain that these results are pretty similar, but that the important parts, the read and write time, are not.)
+If we look at these results, we can already see that the read and write times are a bit different. We can calculate the average read time by taking the average of BM3's results and subtracting the average BM2 result from it:
+
+$$\frac{647,216+660,766+618,857+629,476+664,407}{5} - \frac{3,354+7,310+7,545+7,460+7,752}{5} = 637,4602$$
+
+So the amount of time it takes for MongoDB to write an object is about **637 microseconds**. The average error margin is about 110 microseconds.
+
+Let's calculate the read time as well. We can calculate the average read time by taking the average of BM6's results and subtracting the average BM5 result from it:
+
+$$\frac{569,395+613,367+600,871+607,044+596,001}{5} - \frac{6,526+5,698+5,857+6,063+6,430}{5} = 591,221$$
+
+So the amount of time it takes for Redis to read an object is about **591 microseconds**. The average error margin is about 35 microseconds.
 
 
 ## Conclusion
 
-(Explain that MongoDB is much faster at writing and a bit slower at reading than Redis in my benchmarks. MongoDB does have a larger margin of error, which means its write times are more inconsistent. Perhaps MongoDB has worse results when under a lot of load and in a multi-threaded environment.)
+In the benchmarks, the results are quite clear. MongoDB is much faster at writing objects than Redis is, and a bit slower at reading objects than Redis is. MongoDB does have a larger margin of error at the writing times, which means its write times are more inconsistent. Perhaps MongoDB performs worse when the application is under a high workload and has a multi-threaded environment. It doesn't seem likely that Redis will outperform MongoDB in write operations though, especially in large applications, when working in an environment with many billions of records.
 
-(Compare your results to other people's results online.)
+It was quite surprising to see MongoDB outperform Redis for write operations. After reading some articles online, I realized that this is most likely because I used Redis as a datastore and not as a cache. According to [this article](https://www.mongodb.com/compare/mongodb-vs-redis), Redis can handle millions of requests per second when used as a cache. This means that an operation can take less than a microsecond when implemented properly. This makes it very tempting to use Redis as a cache and MongoDB as a datastore. The architecture of the application would then look similar to this:
 
-(List factors which could influence read and write speed in a production environment. For example, if you are using databases on a cloud service, you are dependant on the network speed of the cloud service and the hardware they use. Workload and OS optimization are also important factors. Multithreading capabilities probably also matter.)
+[![Potential Application Architecture](../Images/potential_application_architecture.jpg)](../Images/potential_application_architecture.jpg)
+
+*In this case, the database would be a MongoDB database.*
+
+It is also possible to use MongoDB as a cache, but Redis is generally faster. In [this article](https://dev.to/playtomic/redis-vs-mongodb-fight-1481) and [this article](https://scalegrid.io/blog/comparing-in-memory-databases-redis-vs-mongodb-percona-memory-engine/), both Redis and MongoDB were used as a cache and were benchmarked. The results are as expected.
+
+Because Redis is often use as a cache and not as a datastore, it was quite hard to find benchmarks from other people who did the same experiment I did. From the information gathered, we can safely say that, although Redis' speeds as a datastore are still quite fast, MongoDB is better suited as a datastore and Redis is better suited for caching.
+
+Other than the choice of database to use as a datastore, there are also other factors which could influence read and write speed in a production environment. For example, if you are using databases on a cloud service, you are dependant on the network speed of the cloud service and the hardware they use. Workload and OS optimization are also important factors.
 
 # Summary
 
