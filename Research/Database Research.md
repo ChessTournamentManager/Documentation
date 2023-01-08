@@ -76,16 +76,15 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 **How popular is Redis?**
 
-
+Redis is widely used by developers. It is the sixth most popular database according to [db-engines.com](https://db-engines.com/en/system/Redis) and the most popular key-value store. Many cloud services such as AWS and Google Cloud provide Redis as a cloud service. There are also lots of articles and videos available online about Redis. 
 
 **Which large companies use Redis?**
 
-
-
-**How fast is Redis?**
-
-
-
+There are quite a few large companies using Redis. Here are a few:
+- Twitter
+- GitHub
+- Snapchat
+- StackOverflow
 
 ## MongoDB
 *Website: https://www.mongodb.com/*
@@ -103,11 +102,6 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 
 **Which large companies use MongoDB?**
-
-
-
-**How fast is MongoDB?**
-
 
 
 
@@ -130,11 +124,6 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 
 
-**How fast is Cassandra?**
-
-
-
-
 ## Scylla
 *Website: https://www.scylladb.com/*
 
@@ -151,12 +140,6 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 
 **Which large companies use Scylla?**
-
-
-
-**How fast is Scylla?**
-
-
 
 
 
