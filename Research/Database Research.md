@@ -796,7 +796,21 @@ BenchmarkTests.ResearchTest.BM5_MockReadObject   avgt   20     6,439 ±  1,115  
 BenchmarkTests.ResearchTest.BM6_ReadObject       avgt   20   496,809 ± 25,369  μs/op
 ```
 
-(Explain that the score displayed is the average of several iterations. Say the time that a single write and read takes on average. Do not forget to subtract the time from the mock tests, and show the calculation. Also say that the retreive key is very fast, and how insignificant the time to access the repository is.)
+(Say the time that a single write and read takes on average. Do not forget to subtract the time from the mock tests, and show the calculation. Also say that the retreive key is very fast, and how insignificant the time to access the repository is.)
+
+For each benchmark result, it is displayed what the mode, amount of iterations, score, error margin and time unit is. For each iteration, several operations took place and the average time per operation was calulated. The score you see here, is the average time of all the calculated times of the iterations.
+
+If we look at these results, we can calculate the average read time by taking the average of BM3's results and subtracting the average BM2 result from it:
+
+$$\frac{1471,553+1440,975+1467,443+1472,734+1464,015}{5} - \frac{7,487+7,686+7,340+7,821+7,975}{5} = 1455,682$$
+
+So the amount of time it takes for Redis to write an object is about **1456 microseconds**. The average error margin is about 80 microseconds.
+
+Let's calculate the read time as well. We can calculate the average read time by taking the average of BM6's results and subtracting the average BM5 result from it:
+
+$$\frac{508,009+481,405+483,402+492,332+496,809}{5} - \frac{6,550+6,442+6,496+6,151+6,439}{5} = 485,976$$
+
+So the amount of time it takes for Redis to read an object is about **486 microseconds**. The average error margin is about 24 microseconds.
 
 ### MongoDB
 
