@@ -122,19 +122,34 @@ Some large companies using MongoDB are the following:
 
 **What type of database is Apache Cassandra?**
 
+Cassandra is a distributed NoSQL wide-column database. A wide-column database stores data in a format similar to relational databases. The difference is that because wide-column databases store data in columns instead of rows, less computation time is needed to perform reads and writes due to how the data is loaded into memory.
 
+Cassandra is a database specialized in working with nodes. A single node represents a single instance of Cassandra. By adding more nodes in your system, you can increase the capacity and speed. This is why Cassandra is called a distributed database and why it works well with multiple machines. Redis and MongoDB have (sharded) clusters instead of nodes, which work similarly. However, the companies behind those two databases have put less emphasis on those features than the company behind Cassandra has put on using nodes.
 
 **In what scenarios is Cassandra often used?**
 
+Cassandra is used in applications where very fast writes are required and where data isn't updated often. These are some popular use-cases for Cassandra:
 
+- Financial services and payments
+- Messaging
+- Transaction logging
+- Tracking packages and orders
 
 **How popular is Cassandra?**
 
-
+There is a lot of information available about Cassandra and how to use it. It is the twelfth most popular database according to [db-engines.com](https://db-engines.com/en/system/Cassandra) and is the first most popular wide-column store. It is also available in many cloud services.
 
 **Which large companies use Cassandra?**
 
+Cassandra is used by some very large companies:
 
+- Apple
+- Instagram
+- Uber
+- Spotify
+- Twitter
+- eBay
+- Netflix
 
 ## Scylla
 *Website: https://www.scylladb.com/*
