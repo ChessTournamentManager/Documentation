@@ -17,12 +17,12 @@
   - [Redis](#redis)
   - [MongoDB](#mongodb)
   - [Cassandra](#cassandra)
-  - [Scylla](#scylla)
+  - [ScyllaDB](#scylladb)
 - [Implementation: How can you use databases within a Spring Boot application?](#implementation-how-can-you-use-databases-within-a-spring-boot-application)
   - [Dockerizing the Application](#dockerizing-the-application)
   - [Redis Implementation](#redis-implementation)
   - [MongoDB Implementation](#mongodb-implementation)
-  - [Scylla Implementation](#scylla-implementation)
+  - [ScyllaDB Implementation](#scylladb-implementation)
 - [Benchmarking: How can you benchmark database performance in a Spring Boot application?](#benchmarking-how-can-you-benchmark-database-performance-in-a-spring-boot-application)
   - [Benchmark Testing With JMH in Spring Boot](#benchmark-testing-with-jmh-in-spring-boot)
   - [System Specifications](#system-specifications)
@@ -31,8 +31,8 @@
     - [MongoDB](#mongodb-1)
 - [Conclusion: Which database performs the fastest for a Spring Boot application?](#conclusion-which-database-performs-the-fastest-for-a-spring-boot-application)
 - [Summary](#summary)
-- [Sources](#sources)
 - [DOT Framework Matrix](#dot-framework-matrix)
+- [References](#references)
 
 # Introduction
 
@@ -124,7 +124,7 @@ For more information about these use-cases, go to [this page](https://aws.amazon
 
 **How popular is Redis?**
 
-Redis is widely used by developers. It is the sixth most popular database according to [db-engines.com](https://db-engines.com/en/system/Redis) and the most popular key-value store. Many cloud services such as AWS and Google Cloud provide Redis as a cloud service. There are also lots of articles and videos available online about Redis. 
+Redis is widely used by developers. It is the 6th most popular database according to [db-engines.com](https://db-engines.com/en/system/Redis) and the most popular key-value store. Many cloud services such as AWS and Google Cloud provide Redis as a cloud service. There are also lots of articles and videos available online about Redis. 
 
 **Which large companies use Redis?**
 
@@ -151,7 +151,7 @@ MongoDB is especially useful for big data. Its speed, non-relational structure a
 
 **How popular is MongoDB?**
 
-MongoDB is used by many developers. It is the fifth most popular database according to [db-engines.com](https://db-engines.com/en/system/MongoDB) and the most popular document store. MongoDB is also widely available on cloud services, such as AWS, Google Cloud and Microsoft Azure. A lot of developers have posted videos and articles about using MongoDB.
+MongoDB is used by many developers. It is the 5th most popular database according to [db-engines.com](https://db-engines.com/en/system/MongoDB) and the most popular document store. MongoDB is also widely available on cloud services, such as AWS, Google Cloud and Microsoft Azure. A lot of developers have posted videos and articles about using MongoDB.
 
 
 **Which large companies use MongoDB?**
@@ -177,7 +177,7 @@ Cassandra is used in applications where very fast writes are required and where 
 
 **How popular is Cassandra?**
 
-There is a lot of information available about Cassandra and how to use it. It is the twelfth most popular database according to [db-engines.com](https://db-engines.com/en/system/Cassandra) and is the first most popular wide-column store. It is also available in many cloud services.
+There is a lot of information available about Cassandra and how to use it. It is the 12th most popular database according to [db-engines.com](https://db-engines.com/en/system/Cassandra) and is the most popular wide-column store. It is also available in many cloud services.
 
 **Which large companies use Cassandra?**
 
@@ -191,24 +191,29 @@ Cassandra is used by some very large companies:
 - eBay
 - Netflix
 
-## Scylla
+## ScyllaDB
 *Website: https://www.scylladb.com/*
 
-**What is Scylla?**
+**What is ScyllaDB?**
 
-(In what scenarios is Scylla often used?)
+(In what scenarios is ScyllaDB often used?)
 
+ScyllaDB is also a wide-column database. It is very similar to Cassandra, and ScyllaDB's creators are very open about their goal to make ScyllaDB replace Cassandra. Cassandra is written in Java, while ScyllaDB is written in C++. Due to ScyllaDB being written in a lower level language, it has the potential to be faster. In many articles comparing ScyllaDB to Cassandra, such as [this one](https://activewizards.com/blog/scylla-vs-cassandra/) and [this one](https://thenewstack.io/benchmarking-apache-cassandra-40-nodes-vs-scylladb-4-nodes/), this result can clearly be seen. ScyllaDB outpeforms Cassandra easily, even while having less nodes than Cassandra. ScyllaDB especially peforms better under high workloads.
 
+Since ScyllaDB is a replacement for Cassandra, it has similar use cases. However, it is not necessary to worry about slow reads and updates. Therefore, ScyllaDB can be used for more things.
 
+**How popular is ScyllaDB?**
 
-**How popular is Scylla?**
+At the moment, even though its performance is great, it is not a popular database. There aren't many resources available online about how to use it with other technologies and developers aren't talking much about how they are using ScyllaDB in their applications. It is the 77th most popular database according to [db-engines.com](https://db-engines.com/en/system/ScyllaDB) and is the 8th most popular wide-column store. It is still available to use on cloud services like AWS and Google Cloud, but it is clear that it is less used compared to other databases in this research.
 
+**Which large companies use ScyllaDB?**
 
-
-**Which large companies use Scylla?**
-
-
-
+There are several large companies using ScyllaDB, such as:
+- Discord
+- Disney+Hotstar
+- Zillow
+- Comcast
+- Expedia
 
 # Implementation: How can you use databases within a Spring Boot application?
 
@@ -482,7 +487,7 @@ The player has been saved succesfully. Let's make a GET request.
 
 *Response contains the new player*
 
-## Scylla Implementation
+## ScyllaDB Implementation
 
 Add this docker compose file to root directory of your application, where your dockerfile is also located. Give your services and volume a fitting name and configure the correct application port.
 ```yml
@@ -515,9 +520,9 @@ volumes:
   rank-db-scylla:
 ```
 
-When this file is run, containers will be made of your application and a Scylla instance.
+When this file is run, containers will be made of your application and a ScyllaDB instance.
 
-Then install these dependencies in your project. With the spring-data-cossandra dependency, you can use the cassandra repositories and connect with a cassandra database. These things will also be useful with the Scylla database. The java-driver-core dependency will allow Java data to be inserted in a Scylla database.
+Then install these dependencies in your project. With the spring-data-cossandra dependency, you can use the cassandra repositories and connect with a cassandra database. These things will also be useful with the ScyllaDB database. The java-driver-core dependency will allow Java data to be inserted in a ScyllaDB database.
 ```xml
 <dependency>
   <groupId>org.springframework.data</groupId>
@@ -564,7 +569,7 @@ public interface RankRepository extends CassandraRepository<Rank, UUID> {
 }
 ```
 
-Then add this configuration class to your project. This configuration class is responsible for connecting with Scylla. In this class, it is mentioned that a keyspace in Scylla will be created, if it doesn't already exist. This is very useful, because this will eliminate the need to enter the database and manually create a keyspace.
+Then add this configuration class to your project. This configuration class is responsible for connecting with ScyllaDB. In this class, it is mentioned that a keyspace in ScyllaDB will be created, if it doesn't already exist. This is very useful, because this will eliminate the need to enter the database and manually create a keyspace.
 ```java
 // Imports
 
@@ -611,7 +616,7 @@ At this point, I expected the the service to work and connect with the database.
 
 [![Rank error logs](../Images/rank_error_logs.png)](../Images/rank_error_logs.png)
 
-In these error logs, the rank service that uses Scylla says that it cannot reach any valid contact point and tells me to make sure I have provided valid addresses. You can see that it thinks the address I have provided was `localhost/<unresolved>:9042`. The `unresolved` part is strange. There is also another large problem. When you are building an application, it should not depend on a database to start running. It should have a mocked database and should run tests without depending on a real database. I have decided not to fix this issue, because it will take too much time to do so. Instead, I will be using a mongo or redis instance for my rank service. This also means that for the upcoming benchmark tests, I will only be testing the Redis and MongoDB instances.
+In these error logs, the rank service that uses ScyllaDB says that it cannot reach any valid contact point and tells me to make sure I have provided valid addresses. You can see that it thinks the address I have provided was `localhost/<unresolved>:9042`. The `unresolved` part is strange. There is also another large problem. When you are building an application, it should not depend on a database to start running. It should have a mocked database and should run tests without depending on a real database. I have decided not to fix this issue, because it will take too much time to do so. Instead, I will be using a mongo or redis instance for my rank service. This also means that for the upcoming benchmark tests, I will only be testing the Redis and MongoDB instances.
 
 # Benchmarking: How can you benchmark database performance in a Spring Boot application? 
 
@@ -950,10 +955,11 @@ Other than the choice of database to use as a data store, there are also other f
 
 # Summary
 
-In the research, the different types of NoSQL databases were mentioned and explained. Several databases were chosen and its use-cases were explained. Then, Redis and MongoDB were implemented in Spring Boot projects and the same was attempted for Scylla. This was done with the help of available dependincies and Docker. After implementing most databases successfully, they were then benchmarked in seperate projects. This was done successfully with the help of JMH and Spring Boot test. The results were then analyzed and some interesting conclusions were reached. Due to this research, insight was gained, as well as architecture ideas for future projects. Lots of information was gained and the questions were answered successfully. Thank you for reading.
-
-# Sources
+In the research, the different types of NoSQL databases were mentioned and explained. Several databases were chosen and its use-cases were explained. Then, Redis and MongoDB were implemented in Spring Boot projects and the same was attempted for ScyllaDB. This was done with the help of available dependincies and Docker. After implementing most databases successfully, they were then benchmarked in seperate projects. This was done successfully with the help of JMH and Spring Boot test. The results were then analyzed and some interesting conclusions were reached. Due to this research, insight was gained, as well as architecture ideas for future projects. Lots of information was gained and the questions were answered successfully. Thank you for reading.
 
 
 # DOT Framework Matrix
+
+
+# References
 
