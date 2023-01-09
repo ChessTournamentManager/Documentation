@@ -18,17 +18,18 @@
   - [MongoDB](#mongodb)
   - [Cassandra](#cassandra)
   - [Scylla](#scylla)
-- [Implementation](#implementation)
+- [Implementation: How can you use databases within a Spring Boot application?](#implementation-how-can-you-use-databases-within-a-spring-boot-application)
   - [Dockerizing the Application](#dockerizing-the-application)
   - [Redis Implementation](#redis-implementation)
   - [MongoDB Implementation](#mongodb-implementation)
   - [Scylla Implementation](#scylla-implementation)
-- [Benchmarking](#benchmarking)
+- [Benchmarking: How can you benchmark database performance in a Spring Boot application?](#benchmarking-how-can-you-benchmark-database-performance-in-a-spring-boot-application)
   - [Benchmark Testing With JMH in Spring Boot](#benchmark-testing-with-jmh-in-spring-boot)
+  - [System Specifications](#system-specifications)
   - [Results](#results)
     - [Redis](#redis-1)
     - [MongoDB](#mongodb-1)
-  - [Conclusion](#conclusion)
+- [Conclusion: Which database performs the fastest for a Spring Boot application?](#conclusion-which-database-performs-the-fastest-for-a-spring-boot-application)
 - [Summary](#summary)
 - [Sources](#sources)
 - [DOT Framework Matrix](#dot-framework-matrix)
@@ -209,7 +210,7 @@ Cassandra is used by some very large companies:
 
 
 
-# Implementation
+# Implementation: How can you use databases within a Spring Boot application?
 
 In this section I will show how to implement these databases to a Spring Boot project. The explanations will assume that there is already a basic API which can handle basic CRUD operations. 
 
@@ -612,7 +613,7 @@ At this point, I expected the the service to work and connect with the database.
 
 In these error logs, the rank service that uses Scylla says that it cannot reach any valid contact point and tells me to make sure I have provided valid addresses. You can see that it thinks the address I have provided was `localhost/<unresolved>:9042`. The `unresolved` part is strange. There is also another large problem. When you are building an application, it should not depend on a database to start running. It should have a mocked database and should run tests without depending on a real database. I have decided not to fix this issue, because it will take too much time to do so. Instead, I will be using a mongo or redis instance for my rank service. This also means that for the upcoming benchmark tests, I will only be testing the Redis and MongoDB instances.
 
-# Benchmarking
+# Benchmarking: How can you benchmark database performance in a Spring Boot application? 
 
 For benchmarking Redis and MongoDB, I have created two more Spring Boot projects, which are located in [this](https://github.com/ChessTournamentManager/Research-Benchmarks) repository. The repository also contains a docker compose file, which is used to get instances of Redis and MongoDB to run.
 
@@ -792,6 +793,17 @@ public class ResearchTest {
   }
 }
 ```
+## System Specifications
+
+Before the results are shown, it is important to see what the hardware specifications are of the machine where the tests are running on:
+
+- CPU: Intel Core i7-12700K
+- RAM: 32GB, 3200MHz
+- Disk: WD_Black SN850 NVMe
+- Motherboard: Gigabyte Z690 UD DDR4
+- OS: Windows 10 x64
+
+With these specifications, it is safe to say that the software is not being bottlenecked by the hardware. However, it is likely that the benchmark results will differ on a machine with other specifications. It is important to keep this in mind.
 
 ## Results
 
@@ -920,11 +932,11 @@ $$\frac{569,395+613,367+600,871+607,044+596,001}{5} - \frac{6,526+5,698+5,857+6,
 So the amount of time it takes for Redis to read an object is about **591 microseconds**. The average error margin is about 35 microseconds.
 
 
-## Conclusion
+# Conclusion: Which database performs the fastest for a Spring Boot application?
 
 In the benchmarks, the results are quite clear. MongoDB is much faster at writing objects than Redis is, and a bit slower at reading objects than Redis is. MongoDB does have a larger margin of error at the writing times, which means its write times are more inconsistent. Perhaps MongoDB performs worse when the application is under a high workload and has a multi-threaded environment. It doesn't seem likely that Redis will outperform MongoDB in write operations though, especially in large applications, when working in an environment with many billions of records.
 
-It was quite surprising to see MongoDB outperform Redis for write operations. After reading some articles online, I realized that this is most likely because I used Redis as a datastore and not as a cache. According to [this article](https://www.mongodb.com/compare/mongodb-vs-redis), Redis can handle millions of requests per second when used as a cache. This means that an operation can take less than a microsecond when implemented properly. This makes it very tempting to use Redis as a cache and MongoDB as a datastore. The architecture of the application would then look similar to this:
+It was quite surprising to see MongoDB outperform Redis for write operations. After reading some articles online, I realized that this is most likely because I used Redis as a data store and not as a cache. According to [this article](https://www.mongodb.com/compare/mongodb-vs-redis), Redis can handle millions of requests per second when used as a cache. This means that an operation can take less than a microsecond when implemented properly. This makes it very tempting to use Redis as a cache and MongoDB as a data store. The architecture of the application would then look similar to this:
 
 [![Potential Application Architecture](../Images/potential_application_architecture.jpg)](../Images/potential_application_architecture.jpg)
 
@@ -932,13 +944,13 @@ It was quite surprising to see MongoDB outperform Redis for write operations. Af
 
 It is also possible to use MongoDB as a cache, but Redis is generally faster. In [this article](https://dev.to/playtomic/redis-vs-mongodb-fight-1481) and [this article](https://scalegrid.io/blog/comparing-in-memory-databases-redis-vs-mongodb-percona-memory-engine/), both Redis and MongoDB were used as a cache and were benchmarked. The results are as expected.
 
-Because Redis is often use as a cache and not as a datastore, it was quite hard to find benchmarks from other people who did the same experiment I did. From the information gathered, we can safely say that, although Redis' speeds as a datastore are still quite fast, MongoDB is better suited as a datastore and Redis is better suited for caching.
+Because Redis is often use as a cache and not as a data store, it was quite hard to find benchmarks from other people who did the same experiment I did. From the information gathered, we can safely say that, although Redis' speeds as a data store are still quite fast, MongoDB is better suited as a data store and Redis is better suited for caching.
 
-Other than the choice of database to use as a datastore, there are also other factors which could influence read and write speed in a production environment. For example, if you are using databases on a cloud service, you are dependant on the network speed of the cloud service and the hardware they use. Workload and OS optimization are also important factors.
+Other than the choice of database to use as a data store, there are also other factors which could influence read and write speed in a production environment. For example, if you are using databases on a cloud service, you are dependant on the network speed of the cloud service and the hardware they use. Workload and OS optimization are also important factors.
 
 # Summary
 
-(Write this when you refactored the document with all the questions. It will then become easier to write a summary.)
+In the research, the different types of NoSQL databases were mentioned and explained. Several databases were chosen and its use-cases were explained. Then, Redis and MongoDB were implemented in Spring Boot projects and the same was attempted for Scylla. This was done with the help of available dependincies and Docker. After implementing most databases successfully, they were then benchmarked in seperate projects. This was done successfully with the help of JMH and Spring Boot test. The results were then analyzed and some interesting conclusions were reached. Due to this research, insight was gained, as well as architecture ideas for future projects. Lots of information was gained and the questions were answered successfully. Thank you for reading.
 
 # Sources
 
