@@ -91,19 +91,31 @@ There are quite a few large companies using Redis. Here are a few:
 
 **What type of database is MongoDB?**
 
-
+MongoDB is a document database. Document databases store and query data as JSON-like documents. The format of these documents is very similar to how objects look like within applications, which means less translation is needed to use data in an application.
 
 **In what scenarios is MongoDB often used?**
 
+MongoDB is often used applications where high flexibility and scalability is required. With MongoDB, it is easy to refactor documents in the database without having any database downtime. Developers also often use MongoDB when they need a solution for storing data that is nested and unsorted.
 
+MongoDB is often used for the following use-cases:
+- Big data
+- Content management systems
+- Customer analytics
+- Real-time data integration
+
+MongoDB is especially useful for big data. Its speed, non-relational structure and support for data analytics make it perfectly suited for handling big data.
 
 **How popular is MongoDB?**
 
+MongoDB is used by many developers. It is the fifth most popular database according to [db-engines.com](https://db-engines.com/en/system/MongoDB) and the most popular document store. MongoDB is also widely available on cloud services, such as AWS, Google Cloud and Microsoft Azure. A lot of developers have posted videos and articles about using MongoDB.
 
 
 **Which large companies use MongoDB?**
 
-
+Some large companies using MongoDB are the following:
+- Toyota
+- Vodafone
+- Forbes
 
 ## Cassandra
 *Website: https://cassandra.apache.org/_/index.html*
