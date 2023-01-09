@@ -1,11 +1,18 @@
-<h1> Database Research </h1>
+<h1>Research: Database Implementation and Performance in Spring Boot</h1>
 
 <h2> Table of Contents </h2>
 
 - [Introduction](#introduction)
+  - [Research Purpose](#research-purpose)
+  - [Research Questions](#research-questions)
 - [My Requirements](#my-requirements)
   - [The database needs to be fast](#the-database-needs-to-be-fast)
   - [The database should be NoSQL](#the-database-should-be-nosql)
+- [What are the different types of NoSQL databases?](#what-are-the-different-types-of-nosql-databases)
+  - [Key-value stores](#key-value-stores)
+  - [Document databases](#document-databases)
+  - [Column oriented databases](#column-oriented-databases)
+  - [Graph databases](#graph-databases)
 - [Database Options](#database-options)
   - [Redis](#redis)
   - [MongoDB](#mongodb)
@@ -28,19 +35,67 @@
 
 # Introduction
 
-For this project, I need to choose a suitable database for all of my services. Since all of my services work very similar, I only want to choose one type of database. I will then use multiple instances of that database type for my services.
+## Research Purpose
 
+This research serves the purpose of giving more insights about which databases are suitable database for a Spring Boot application. I have decided to start this research, I use Spring Boot services for my project, the Chess Tournament Manager.
+
+## Research Questions
+
+In this research, there is a main question which answer should be very clear at the end of this research:
+
+***Which database performs the fastest for a Spring Boot application?***
+
+Besides this main question, there are several sub-questions that should also be answered in this research:
+
+1. What are the different types of NoSQL databases?
+2. How can you use databases within a Spring Boot application?
+3. How can you benchmark database performance in a Spring Boot application? 
 
 # My Requirements
 
 ## The database needs to be fast
 
-I want my website to be as responsive as possible. It would be a shame if I used a slow database while using such a fast module bundler like Vite. The database must also be able to scale well, in case many people use the website. This is not that much as a requirement though. It is more important that the database is fast than it is scalable.
+I want my website to be as responsive as possible. It would be a shame if I used a slow database while using such a fast module bundler like Vite for the Vue.js frontend. The database must also be able to scale well, in case many people use the website. This is not that much as a requirement though. It is more important that the database is fast than it is scalable.
 
 ## The database should be NoSQL
 
-There are multiple reasons why I don't want to use a database with SQL. First of all, SQL databases are generally slower than NoSQL databases. According to a Rochester study, key-value storage databases are especially fast (https://www.cs.rochester.edu/courses/261/fall2017/termpaper/submissions/06/Paper.pdf). Furthermore, it is easier to do scaling when using NoSQL databases. When scaling with SQL databases, you have to migrate to a more expensive server (verticle scaling). When scaling with NoSQL databases, you can just add more cheaper servers (horizontal scaling) (https://www.mongodb.com/nosql-explained/nosql-vs-sql, https://www.geeksforgeeks.org/sql-vs-nosql-which-one-is-better-to-use/). Lastly, I want to use NoSQL, because I have never used a NoSQL database in an individual project before and I would like to gain more experience by using it in this project.
+There are multiple reasons why I don't want to use a database with SQL. SQL databases seem to be generally slower than NoSQL databases. According to a [Rochester study](https://www.cs.rochester.edu/courses/261/fall2017/termpaper/submissions/06/Paper.pdf), key-value storage databases are especially fast. Furthermore, it is easier to do scaling when using NoSQL databases. When scaling with SQL databases, you have to migrate to a more expensive server (vertical scaling). When scaling with NoSQL databases, you can just add more cheaper servers (horizontal scaling) (https://www.mongodb.com/nosql-explained/nosql-vs-sql, https://www.geeksforgeeks.org/sql-vs-nosql-which-one-is-better-to-use/). Lastly, I want to use NoSQL, because I have never used a NoSQL database in an individual project before and I would like to gain more experience by using it in this project.
 
+# What are the different types of NoSQL databases?
+
+There are many different types of NoSQL databases. Four of them are very popular:
+
+## Key-value stores
+
+In a key-value store, data is stored and retrieved using a unique key that identifies the particular item of data. The data (value) associated with a key can be any type of data, such as strings, integers, lists, dates, UUID's and more. Key-value databases are typically very fast and scalable, making them well-suited for applications that require quick access to large amounts of data.
+
+[![Redis data types](../Images/redis_data_types.png)](../Images/redis_data_types.png)
+
+*Data types in key-value databases*
+
+## Document databases
+
+Document databases store and query data as JSON-like documents. The format of these documents is very similar to how objects look like within applications, which means less translation is needed to use data in an application. In document databases, it is usually also possible to perform document nesting.
+
+[![Database Document Example](../Images/example-db-documents.png)](../Images/example-db-documents.png)
+
+*Examples of documents stored in a document database*
+
+## Column oriented databases
+
+Column oriented databases, or wide-column databases, work similarly to relational databases. The difference is that because wide-column databases store data in columns instead of rows, less computation time is needed to perform specific queries due to how the data is loaded into memory. Another difference compared to row oriented databases, is that data in wide-column databases are much easier to distribute to different database instances, and thus to scale horizontally.
+
+[![Row vs Column](../Images/row-vs-column.jpg)](../Images/row-vs-column.jpg)
+
+*Row-oriented vs. column-oriented database*
+
+## Graph databases
+
+Graph databases are very different compared to other types of databases. They focus more on the relationship between data and specialize more in queries where relationships need to be found, rather than performing quick reads and writes. In my application, I do not need to perform such queries and would like to minimize relationships between data. Therefore, I will not be using and testing any graph databases in this research.
+
+[![Graph Database Modeling Example](../Images/graph-data.png)](../Images/graph-data.png)
+
+*An example of modeled data stored in a graph database*
 
 # Database Options
 
@@ -49,17 +104,9 @@ For my database options, I decided it would be good to pick different types of N
 ## Redis
 *Website: https://redis.com/*
 
-**What type of database is Redis?**
+**What is Redis?**
 
-Redis is a type of database known as a key-value database. In a key-value database, data is stored and retrieved using a unique key that identifies the particular item of data. The data (value) associated with a key can be any type of data, such as strings, integers, lists, dates, UUID's and more. Key-value databases are typically very fast and scalable, making them well-suited for applications that require quick access to large amounts of data.
-
-[![Redis data types](../Images/redis_data_types.png)](../Images/redis_data_types.png)
-
-*Data types in Redis*
-
-**In what scenarios is Redis often used?**
-
-Redis is a good option for applications which need to handle lots of small continuous reads and writes. It is more often used as a cache, but can also be used as a data store. It can also store data in-memory, which allows these actions to be done faster. It is also ideal for applications that don’t require frequent updates or need to support complex queries.
+Redis is a key-value database. It is a good option for applications which need to handle lots of small continuous reads and writes. It is more often used as a cache, but can also be used as a data store. It can also store data in-memory, which allows these actions to be done faster. It is also ideal for applications that don’t require frequent updates or need to support complex queries.
 
 Redis is often used for the following use-cases:
 
@@ -89,13 +136,9 @@ There are quite a few large companies using Redis. Here are a few:
 ## MongoDB
 *Website: https://www.mongodb.com/*
 
-**What type of database is MongoDB?**
+**What is MongoDB?**
 
-MongoDB is a document database. Document databases store and query data as JSON-like documents. The format of these documents is very similar to how objects look like within applications, which means less translation is needed to use data in an application.
-
-**In what scenarios is MongoDB often used?**
-
-MongoDB is often used applications where high flexibility and scalability is required. With MongoDB, it is easy to refactor documents in the database without having any database downtime. Developers also often use MongoDB when they need a solution for storing data that is nested and unsorted.
+MongoDB is a document database. It is often used applications where high flexibility and scalability is required. With MongoDB, it is easy to refactor documents in the database without having any database downtime. Developers also often use MongoDB when they need a solution for storing data that is nested and unsorted.
 
 MongoDB is often used for the following use-cases:
 - Big data
@@ -120,13 +163,9 @@ Some large companies using MongoDB are the following:
 ## Cassandra
 *Website: https://cassandra.apache.org/_/index.html*
 
-**What type of database is Apache Cassandra?**
+**What is Apache Cassandra?**
 
-Cassandra is a distributed NoSQL wide-column database. A wide-column database stores data in a format similar to relational databases. The difference is that because wide-column databases store data in columns instead of rows, less computation time is needed to perform reads and writes due to how the data is loaded into memory.
-
-Cassandra is a database specialized in working with nodes. A single node represents a single instance of Cassandra. By adding more nodes in your system, you can increase the capacity and speed. This is why Cassandra is called a distributed database and why it works well with multiple machines. Redis and MongoDB have (sharded) clusters instead of nodes, which work similarly. However, the companies behind those two databases have put less emphasis on those features than the company behind Cassandra has put on using nodes.
-
-**In what scenarios is Cassandra often used?**
+Cassandra is a distributed NoSQL wide-column database. It is a database specialized in working with nodes. A single node represents a single instance of Cassandra. By adding more nodes in your system, you can increase the capacity and speed. This is why Cassandra is called a distributed database and why it works well with multiple machines. Redis and MongoDB have (sharded) clusters instead of nodes, which work similarly. However, the companies behind those two databases have put less emphasis on those features than the company behind Cassandra has put on using nodes.
 
 Cassandra is used in applications where very fast writes are required and where data isn't updated often. These are some popular use-cases for Cassandra:
 
@@ -154,11 +193,10 @@ Cassandra is used by some very large companies:
 ## Scylla
 *Website: https://www.scylladb.com/*
 
-**What type of database is Scylla?**
+**What is Scylla?**
 
+(In what scenarios is Scylla often used?)
 
-
-**In what scenarios is Scylla often used?**
 
 
 
