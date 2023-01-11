@@ -7,7 +7,7 @@
   - [Multidisciplinary teams](#multidisciplinary-teams)
   - [Short cycles](#short-cycles)
   - [Working visually](#working-visually)
-- [What Agile methods are there?](#what-agile-methods-are-there)
+- [What Agile methods exist?](#what-agile-methods-exist)
   - [Kanban](#kanban)
   - [Scrum](#scrum)
   - [Extreme Programming (XP)](#extreme-programming-xp)
@@ -27,7 +27,7 @@
 
 # What is Agile?
 
-Agile is a way of working within a project and is done often in professional software development teams. Some key features of Agile are flexible strategy, multidisciplinary teams, Short cycles and working visually. 
+Agile is a way of working within a project and is done often in professional software development teams. Some key features of Agile are flexible strategy, multidisciplinary teams, short cycles and working visually. 
 
 ## Flexible strategy
 
@@ -45,7 +45,7 @@ An Agile team often works in short cycles of 1 to 4 weeks. Stakeholders have a b
 
 Within Agile, the idea is to easily see and track project progress. Tools are used to ensure that the whole team is aware of all progress. 
 
-# What Agile methods are there? 
+# What Agile methods exist? 
 
 There are many Agile methods used by software developer teams. The best known Agile methods are: 
 
