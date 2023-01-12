@@ -22,6 +22,7 @@
   - [Stand-up meetings](#stand-up-meetings)
   - [Planning meeting](#planning-meeting)
   - [Review meeting](#review-meeting)
+  - [Retrospective](#retrospective)
   - [Scrum board](#scrum-board)
 
 
@@ -97,11 +98,15 @@ A stand-up meeting is a daily meeting of up to 15 minutes, but preferably as sho
 
 ## Planning meeting 
 
-A planning meeting is held at the beginning of a sprint. This meeting determines what will happen in the next sprint. 
+A planning meeting is held at the beginning of a sprint. This meeting determines what will happen in the sprint. In this meeting, user stories could be created and be put into the backlog, planning poker is performed, and developers choose which user stories should be done in the current sprints.
 
 ## Review meeting 
 
 A review meeting is held at the end of each sprint. During this meeting, feedback is given by the stakeholders. 
+
+## Retrospective
+
+A retrospective meeting is held at the end of each sprint, after the review meeting. In the retrospective, members of the developer team discuss which processes went well in the finished sprint and which processes could be improved.
 
 ## Scrum board 
 
