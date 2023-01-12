@@ -9,6 +9,7 @@
   - [Stand-up](#stand-up)
   - [Definition of Done](#definition-of-done)
   - [At the End of Every Sprint](#at-the-end-of-every-sprint)
+- [Agile Process in Action](#agile-process-in-action)
 - [Process Benefits](#process-benefits)
 
 
@@ -67,6 +68,10 @@ If all the acceptance criteria in a user story are done and all the tasks are fi
 ## At the End of Every Sprint
 
 At the end of every sprint, a [sprint review](/Proof/Agile%20Methodology/A%20Deeper%20Dive%20Into%20Agile.md#review-meeting) with the product owners is done and a [sprint retrospective](/Proof/Agile%20Methodology/A%20Deeper%20Dive%20Into%20Agile.md#retrospective) is held. Each sprint retrospective has a GitHub board on GitHub projects.
+
+# Agile Process in Action
+
+(show Jira board, gitkraken, merge request protection, sonarcloud and describe what the agile developments were per sprint, such as the code quality gate being discussed and changed, and us getting better at task distribution)
 
 # Process Benefits
 
