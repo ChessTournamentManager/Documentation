@@ -75,4 +75,4 @@ At the end of every sprint, a [sprint review](/Proof/Agile%20Methodology/A%20Dee
 
 # Process Benefits
 
-this helped us because blabla
+This way of working improved our professional skills greatly. The agreements we made at the start of the project helped us save a lot of time. Without a clear set of agreements, many things would not be very clear and would be less precise. An example is that this process helped us realize that we need to protect important Git branches by making merge request approvals necessary. Without this, we would have much less quality assurance about the code we have made.
