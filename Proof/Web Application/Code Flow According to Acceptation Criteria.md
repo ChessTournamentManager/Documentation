@@ -29,10 +29,13 @@ The main user story for the application is the following:
 
 The acceptation criteria for measuring if this user story is successfully implemented in the application, are the following:
 
-1. *Tournament data is sent to the tournament service through a POST request.*
-2. *Tournament data can be stored in the tournament database.*
-3. *Tournament data is visible on the frontend.*
-4. *After a tournament is created on the frontend, there must be visual feedback for showing that the tournament was created successfully.*
+1. *Tournament data can be filled in from the frontend.*
+2. *Tournament data can be sent to the tournament service through a POST request.*
+3. *Tournament data can be retrieved from the tournament service through a GET request.* 
+4. *Tournament data can be stored in the tournament database.*
+5. *Tournament data can be rejected if the data is not valid.*
+6. *Tournament data can be shown on the frontend.*
+7. *After a tournament is created on the frontend, there must be visual feedback for showing that the tournament was created successfully.*
 
 My plan for implementing all of the above criteria is to make input fields and a button for the user on the frontend. When a button is clicked, the tournament is created and saved in the tournament database after a POST request. Then, the names of all tournaments will be visible on the same page where the user created a tournament, including the name of the tournament that was just created. Basically, there should be a round trip of code flow and tournament data, starting in the frontend, going through the backend, and then returning to the frontend again.
 
